@@ -1,22 +1,27 @@
 #!/usr/bin/python3
-"""
-Uses https://jsonplaceholder.typicode.com along with an employee ID to
-return information about the employee's todo list progress
-"""
+""""Module"""
 
-import csv
+import json
 import requests
-from sys import argv
+import sys
 
 if __name__ == '__main__':
-    userId = argv[1]
-    user = requests.get("https://jsonplaceholder.typicode.com/users/{}".
-                        format(userId), verify=False).json()
-    todo = requests.get("https://jsonplaceholder.typicode.com/todos?userId={}".
-                        format(userId), verify=False).json()
-    with open("{}.csv".format(userId), 'w', newline='') as csvfile:
-        taskwriter = csv.writer(csvfile, quoting=csv.QUOTE_ALL)
-        for task in todo:
-            taskwriter.writerow([int(userId), user.get('username'),
-                                 task.get('completed'),
-                                 task.get('title')])
+    employee_id = sys.argv[1]
+    user_url = "https://jsonplaceholder.typicode.com/users/{}" \
+        .format(employee_id)
+    todos_url = "https://jsonplaceholder.typicode.com/users/{}/todos/" \
+        .format(employee_id)
+
+    user_info = requests.request('GET', user_url).json()
+    todos_info = requests.request('GET', todos_url).json()
+
+    employee_username = user_info["username"]
+
+    todos_info_sorted = [
+        dict(zip(["task", "completed", "username"],
+                 [task["title"], task["completed"], employee_username]))
+        for task in todos_info]
+
+    user_dict = {str(employee_id): todos_info_sorted}
+    with open(str(employee_id) + '.json', "w") as file:
+        file.write(json.dumps(user_dict))
