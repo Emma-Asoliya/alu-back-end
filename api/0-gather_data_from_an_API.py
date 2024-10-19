@@ -1,54 +1,22 @@
 #!/usr/bin/python3
 """
-    python script that returns TODO list progress for a given employee ID
+Uses https://jsonplaceholder.typicode.com along with an employee ID to
+return information about the employee's todo list progress
 """
-import json
+
 import requests
 from sys import argv
 
-
-if __name__ == "__main__":
-    """
-        request user info by employee ID
-    """
-    request_employee = requests.get(
-        'https://jsonplaceholder.typicode.com/users/{}/'.format(argv[1]))
-    """
-        convert json to dictionary
-    """
-    employee = json.loads(request_employee.text)
-    """
-        extract employee name
-    """
-    employee_name = employee.get("name")
-
-    """
-        request user's TODO list
-    """
-    request_todos = requests.get(
-        'https://jsonplaceholder.typicode.com/users/{}/todos'.format(argv[1]))
-    """
-        dictionary to store task status in boolean format
-    """
-    tasks = {}
-    """
-        convert json to list of dictionaries
-    """
-    employee_todos = json.loads(request_todos.text)
-    """
-        loop through dictionary & get completed tasks
-    """
-    for dictionary in employee_todos:
-        tasks.update({dictionary.get("title"): dictionary.get("completed")})
-
-    """
-        return name, total number of tasks & completed tasks
-    """
-    EMPLOYEE_NAME = employee_name
-    TOTAL_NUMBER_OF_TASKS = len(tasks)
-    NUMBER_OF_DONE_TASKS = len([k for k, v in tasks.items() if v is True])
-    print("Employee {} is done with tasks({}/{}):".format(
-        EMPLOYEE_NAME, NUMBER_OF_DONE_TASKS, TOTAL_NUMBER_OF_TASKS))
-    for k, v in tasks.items():
-        if v is True:
-            print("\t {}".format(k))
+if __name__ == '__main__':
+    userId = argv[1]
+    user = requests.get("https://jsonplaceholder.typicode.com/users/{}".
+                        format(userId), verify=False).json()
+    todo = requests.get("https://jsonplaceholder.typicode.com/todos?userId={}".
+                        format(userId), verify=False).json()
+    completed_tasks = []
+    for task in todo:
+        if task.get('completed') is True:
+            completed_tasks.append(task.get('title'))
+    print("Employee {} is done with tasks({}/{}):".
+          format(user.get('name'), len(completed_tasks), len(todo)))
+    print("\n".join("\t {}".format(task) for task in completed_tasks))
