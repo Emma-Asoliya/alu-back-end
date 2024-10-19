@@ -1,4 +1,3 @@
-
 #!/usr/bin/python3
 """
 Uses https://jsonplaceholder.typicode.com along with an employee ID to
